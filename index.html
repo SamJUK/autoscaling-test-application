@@ -88,7 +88,12 @@
       .toolbar {
             text-align: center;
             margin-top: 1rem;
-        }
+            }
+            hr {
+                border: 0;
+    height: 1px;
+    background: var(--clr-cnt-border);
+}
     </style>
   </head>
   <body>
@@ -99,6 +104,9 @@
         <p>Host: {{ .Host }}</p>
         <p>Hostname: {{ .Hostname }}</p>
         <p>Date: {{ .Time }}</p>
+        <hr>
+        <p>Max Connections: {{ .MaxConnections }}</p>
+        <p>Request Time: {{ .RequestTime }}</p>
     </div>
     <div class="toolbar">
       <input type="checkbox" id="autoRefresh" data-auto-refresh />

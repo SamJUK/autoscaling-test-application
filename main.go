@@ -86,9 +86,11 @@ func main() {
 
 		tpl := template.Must(template.New("index").ParseFiles("index.html"))
 		tpl.ExecuteTemplate(w, "index.html", map[string]string{
-			"Time":     time.Now().Format(time.RFC1123),
-			"Hostname": hostname,
-			"Host":     host,
+			"Time":           time.Now().Format(time.RFC1123),
+			"Hostname":       hostname,
+			"Host":           host,
+			"MaxConnections": strconv.Itoa(connectionCount),
+			"RequestTime":    strconv.Itoa(requestTime) + "s",
 		})
 	})
 
