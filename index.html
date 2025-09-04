@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-theme>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autoscaling Test Application</title>
+    <style>
+      .theme-toggle {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5em 1.2em;
+        border-radius: 6px;
+        border: 1px solid var(--clr-cnt-border);
+        background: linear-gradient(90deg, var(--clr-theme-light) 60%, var(--clr-theme-dark) 100%);
+        color: var(--clr-heading);
+        font-size: 1rem;
+        box-shadow: 0 2px 8px var(--clr-cnt-shadow);
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      }
+      .theme-toggle:hover {
+        box-shadow: 0 4px 16px var(--clr-cnt-shadow);
+        background: linear-gradient(90deg, var(--clr-cnt-border) 60%, var(--clr-cnt-bg) 100%);
+      }
+      html {
+        --clr-theme-light: #e0e7ff;
+        --clr-theme-dark: #f8fafc;
+
+        --clr-heading: #60a5fa;
+        --clr-text: #1e293b;
+
+        --clr-cnt-bg: #e0e7ff;
+        --clr-cnt-border: #c7d2fe;
+        --clr-cnt-shadow: #0004;
+      }
+
+      html[data-theme="dark"] {
+        --clr-theme-light: #1e293b;
+        --clr-theme-dark: #111827;
+
+        --clr-heading: #60a5fa;
+        --clr-text: #cbd5e1;
+
+        --clr-cnt-bg: #1e293b;
+        --clr-cnt-border: #374151;
+        --clr-cnt-shadow: #0008;
+      }
+
+      body {
+        font-family: "Inter", Arial, sans-serif;
+        background: linear-gradient(
+          135deg,
+          var(--clr-theme-light) 0%,
+          var(--clr-theme-dark) 100%
+        );
+        color: var(--clr-text);
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .container {
+        background: var(--clr-cnt-bg);
+        border-radius: 12px;
+        box-shadow: 0 4px 24px var(--clr-cnt-shadow);
+        padding: 1.5rem 2rem;
+        min-width: 320px;
+        text-align: center;
+        border: 1px solid var(--clr-cnt-border);
+      }
+      h1 {
+        font-size: 2.1rem;
+        color: var(--clr-heading);
+        margin-bottom: 1.2rem;
+        letter-spacing: 1px;
+      }
+      p {
+        margin: 0.7em 0;
+        font-size: 1.5rem;
+      }
+      .theme-toggle {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+      }
+      .toolbar {
+            text-align: center;
+            margin-top: 1rem;
+        }
+    </style>
+  </head>
+  <body>
+    <button data-theme-toggle class="theme-toggle">Dark Mode Toggle</button>
+    <div>
+      <h1>Autoscaling Test Application</h1>
+      <div class="container">
+        <p>Host: {{ .Host }}</p>
+        <p>Hostname: {{ .Hostname }}</p>
+        <p>Date: {{ .Time }}</p>
+    </div>
+    <div class="toolbar">
+      <input type="checkbox" id="autoRefresh" data-auto-refresh />
+      <label for="autoRefresh">Auto Refresh</label>
+    </div>
+    </div>
+
+    <script>
+      const setTheme = (theme) =>
+        document.documentElement.setAttribute("data-theme", theme);
+      setTheme(
+        window?.matchMedia?.("(prefers-color-scheme:dark)")?.matches
+          ? "dark"
+          : "light"
+      );
+
+      const themeToggle = document.querySelector("[data-theme-toggle]");
+      themeToggle.addEventListener("click", () => {
+        setTheme(
+          document.documentElement.getAttribute("data-theme") === "dark"
+            ? "light"
+            : "dark"
+        );
+      });
+
+
+      let autoRefreshTimer;
+      const autoRefresh = document.querySelector("[data-auto-refresh]");
+      autoRefresh.addEventListener("change", () => {
+        localStorage.setItem("autoRefresh", autoRefresh.checked);
+        console.log("Auto Refresh is", autoRefresh.checked ? "ON" : "OFF");
+        if (autoRefresh.checked) {
+          autoRefreshTimer = setTimeout(() => {
+            location.reload();
+          }, 5000);
+        } else {
+            clearTimeout(autoRefreshTimer);
+        }
+      });
+
+
+      const isAutoRefreshEnabled = localStorage.getItem("autoRefresh") === "true";
+      if (isAutoRefreshEnabled) {
+        autoRefresh.checked = true;
+        autoRefresh.dispatchEvent(new Event("change"));
+      }
+    </script>
+  </body>
+</html>

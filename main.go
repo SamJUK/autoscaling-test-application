@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net"
 	"net/http"
@@ -19,6 +20,18 @@ func getEnv(key, fallback string) string {
 		value = fallback
 	}
 	return value
+}
+
+func GetOutboundIP() net.IP {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	return localAddr.IP
 }
 
 func main() {
@@ -69,7 +82,14 @@ func main() {
 			hostname = "unknown"
 		}
 
-		fmt.Fprintf(w, "Hello, World!\n\nTime: %s\nHost: %s", time.Now().Format(time.RFC1123), hostname)
+		host := fmt.Sprintf("%s:%s", GetOutboundIP(), listenPort)
+
+		tpl := template.Must(template.New("index").ParseFiles("index.html"))
+		tpl.ExecuteTemplate(w, "index.html", map[string]string{
+			"Time":     time.Now().Format(time.RFC1123),
+			"Hostname": hostname,
+			"Host":     host,
+		})
 	})
 
 	defer l.Close()
