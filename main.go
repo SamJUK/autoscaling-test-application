@@ -115,8 +115,8 @@ func main() {
 			fmt.Fprintf(w, "Request Time: %s\n", templateData.RequestTime)
 			return
 		} else if outputFormat == "html" {
-			tpl := template.Must(template.New("index").ParseFiles("index.html"))
-			tpl.ExecuteTemplate(w, "index.html", templateData)
+			tpl := template.Must(template.New("index").ParseFiles("autoscaling-test-server.html"))
+			tpl.ExecuteTemplate(w, "autoscaling-test-server.html", templateData)
 		}
 
 	})
