@@ -12,6 +12,7 @@ CONNECTION_COUNT | `10` | Limit for HTTP requests
 REQUEST_TIME | `3` | Time to sleep each request for
 LISTEN_ADDRESS | `0.0.0.0` | Address to listen on
 LISTEN_PORT | `80` | Port to listen on
+OUTPUT_FORMAT | `html` | Output format. Options are `[text, html]`
 
 ## Example Usage
 

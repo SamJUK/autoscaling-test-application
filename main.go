@@ -14,6 +14,14 @@ import (
 	"golang.org/x/net/netutil"
 )
 
+type TemplateData struct {
+	Time           string
+	Hostname       string
+	Host           string
+	MaxConnections string
+	RequestTime    string
+}
+
 func getEnv(key, fallback string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
@@ -34,7 +42,20 @@ func GetOutboundIP() net.IP {
 	return localAddr.IP
 }
 
+func getHostname() string {
+	hostname, err := os.Hostname()
+	if err != nil {
+		return "unknown"
+	}
+	return hostname
+}
+
 func main() {
+	outputFormat := getEnv("OUTPUT_FORMAT", "html")
+	if outputFormat != "html" && outputFormat != "text" {
+		log.Fatalf("Invalid OUTPUT_FORMAT: %s\nValid OUTPUT_FORMAT values are 'html' or 'text'", outputFormat)
+	}
+
 	listenAddress := getEnv("LISTEN_ADDRESS", "0.0.0.0")
 	listenPort := getEnv("LISTEN_PORT", "80")
 	listen := fmt.Sprintf("%s:%s", listenAddress, listenPort)
@@ -77,21 +98,27 @@ func main() {
 		time.Sleep(time.Duration(requestTime) * time.Second)
 		close(done)
 
-		hostname, err := os.Hostname()
-		if err != nil {
-			hostname = "unknown"
+		templateData := TemplateData{
+			Time:           time.Now().Format(time.RFC1123),
+			Hostname:       getHostname(),
+			Host:           fmt.Sprintf("%s:%s", GetOutboundIP(), listenPort),
+			MaxConnections: strconv.Itoa(connectionCount),
+			RequestTime:    strconv.Itoa(requestTime) + "s",
 		}
 
-		host := fmt.Sprintf("%s:%s", GetOutboundIP(), listenPort)
+		if outputFormat == "text" {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			fmt.Fprintf(w, "Host: %s\n", templateData.Host)
+			fmt.Fprintf(w, "Hostname: %s\n", templateData.Hostname)
+			fmt.Fprintf(w, "Date: %s\n", templateData.Time)
+			fmt.Fprintf(w, "Max Connections: %s\n", templateData.MaxConnections)
+			fmt.Fprintf(w, "Request Time: %s\n", templateData.RequestTime)
+			return
+		} else if outputFormat == "html" {
+			tpl := template.Must(template.New("index").ParseFiles("index.html"))
+			tpl.ExecuteTemplate(w, "index.html", templateData)
+		}
 
-		tpl := template.Must(template.New("index").ParseFiles("index.html"))
-		tpl.ExecuteTemplate(w, "index.html", map[string]string{
-			"Time":           time.Now().Format(time.RFC1123),
-			"Hostname":       hostname,
-			"Host":           host,
-			"MaxConnections": strconv.Itoa(connectionCount),
-			"RequestTime":    strconv.Itoa(requestTime) + "s",
-		})
 	})
 
 	defer l.Close()
